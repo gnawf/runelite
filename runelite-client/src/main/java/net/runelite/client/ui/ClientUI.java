@@ -494,7 +494,10 @@ public class ClientUI
 				frame.setLocationRelativeTo(frame.getOwner());
 			}
 
-			trayIcon = SwingUtil.createTrayIcon(ICON, properties.getTitle(), frame);
+			// Tray icon is only used to send notifications which is not required on Mac & Linux
+			if (OSType.getOSType() != OSType.MacOS && OSType.getOSType() != OSType.Linux) {
+				trayIcon = SwingUtil.createTrayIcon(ICON, properties.getTitle(), frame);
+			}
 
 			frame.setVisible(true);
 			frame.toFront();
