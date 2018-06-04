@@ -40,19 +40,25 @@ import net.runelite.client.ui.overlay.components.PanelComponent;
 public class BarrowsBrotherSlainOverlay extends Overlay
 {
 	private final Client client;
+	private final BarrowsConfig config;
 	private final PanelComponent panelComponent = new PanelComponent();
 
 	@Inject
-	private BarrowsBrotherSlainOverlay(Client client)
+	private BarrowsBrotherSlainOverlay(Client client, BarrowsConfig config)
 	{
 		setPosition(OverlayPosition.TOP_LEFT);
 		setPriority(OverlayPriority.LOW);
 		this.client = client;
+		this.config = config;
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		if (!config.showCustomSlainOverlay()) {
+			return null;
+		}
+
 		// Do not display overlay if potential is null/hidden
 		Widget potential = client.getWidget(WidgetInfo.BARROWS_POTENTIAL);
 		if (potential == null || potential.isHidden())
