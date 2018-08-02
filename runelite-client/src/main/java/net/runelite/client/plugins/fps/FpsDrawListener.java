@@ -69,7 +69,7 @@ public class FpsDrawListener implements Consumer<Image>
 	void reloadConfig()
 	{
 		lastMillis = System.currentTimeMillis();
-		targetDelay = 1000 / Math.max(1, config.maxFps());
+		targetDelay = calcTargetDelay();
 		sleepDelay = targetDelay;
 
 		for (int i = 0; i < SAMPLE_SIZE; i++)
@@ -80,19 +80,24 @@ public class FpsDrawListener implements Consumer<Image>
 
 	void onFocusChanged(FocusChanged event)
 	{
-		this.isFocused = event.isFocused();
+		isFocused = event.isFocused();
+		targetDelay = calcTargetDelay();
+	}
+
+	private int calcTargetDelay()
+	{
+		int maxFps = isFocused ? config.maxFpsFocused() : config.maxFpsUnfocused();
+		return 1000 / Math.max(1, maxFps);
 	}
 
 	private boolean isEnforced()
 	{
-		return FpsLimitMode.ALWAYS == config.limitMode()
-			|| (FpsLimitMode.UNFOCUSED == config.limitMode() && !isFocused);
+		return isFocused ? config.maxFpsFocused() != 50 : config.maxFpsUnfocused() != 50;
 	}
 
 	@Override
 	public void accept(Image image)
 	{
-
 		if (!isEnforced())
 		{
 			return;
@@ -122,13 +127,10 @@ public class FpsDrawListener implements Consumer<Image>
 		// decides to run cycles.
 		// This will also keep us safe from time spent in plugins conditionally
 		// as some plugins and overlays are only appropriate in some game areas
-		if (averageDelay > targetDelay)
+		if (averageDelay != targetDelay)
 		{
-			sleepDelay--;
-		}
-		else if (averageDelay < targetDelay)
-		{
-			sleepDelay++;
+			long delta = targetDelay - averageDelay;
+			sleepDelay += delta / 2;
 		}
 
 		if (sleepDelay > 0)
