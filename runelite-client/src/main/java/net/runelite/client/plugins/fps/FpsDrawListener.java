@@ -135,13 +135,27 @@ public class FpsDrawListener implements Consumer<Image>
 
 		if (sleepDelay > 0)
 		{
-			try
+			long cycles = Math.max(1, sleepDelay / 50);
+
+			long startTargetDelay = targetDelay;
+
+			for (long i = 0; i < cycles; i++)
 			{
-				Thread.sleep(sleepDelay);
-			}
-			catch (InterruptedException e)
-			{
-				// Can happen on shutdown
+				// If the target delay changes, then stop sleeping to rectify the sleep delay
+				if (startTargetDelay != targetDelay)
+				{
+					break;
+				}
+
+				try
+				{
+					long duration = sleepDelay / cycles;
+					Thread.sleep(duration);
+				}
+				catch (InterruptedException e)
+				{
+					// Can happen on shutdown
+				}
 			}
 		}
 	}
